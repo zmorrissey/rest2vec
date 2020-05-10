@@ -4,17 +4,9 @@
 """Module containing classes and functions for performing rest2vec.
 
 Description:
-    This module contains functions for the equations described in [1]. A
-    MATLAB implementation of this code is also available on GitHub at
-    https://github.com/zmorrissey/rest2vec.
-
-    The two primary classes are PhaseEmbedding() and ECI().
-    phase_embedding() is used to create the negative probability matrix,
-    PhASE matrix, and perform modularity. ECI() is used for exact
-    combinatorial inference to compare two group PhASE matrices.
-
-    In addition to the classes, the individual methods have been included as
-    standalone functions (usually preceded by '_') for troubleshooting.
+    This module contains the PhaseEmbedding object for the equations
+    described in [1]. In addition to the classes, the individual methods
+    have been included as internal functions (preceded by '_').
 
 Reference:
     [1] Morrissey et al. (2020). rest2vec: A kernel method for studying the
