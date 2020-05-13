@@ -11,6 +11,8 @@ Description:
 Reference:
     [1] Morrissey et al. (2020). rest2vec: A kernel method for studying the
         intrinsic geometry of functional connectomes.
+        DOI: https://doi.org/10.1101/2020.05.10.085332
+        URL: https://www.biorxiv.org/content/early/2020/05/12/2020.05.10.085332
 
 Contact:
     First author
