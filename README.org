@@ -28,7 +28,7 @@ The library versions used are listed below and in =requirements.txt=.
 The =rest2vec= module can be used to create an instance of the =PhaseEmbedding= class.
 The general usage is
 
-#+BEGIN_SRC -n python
+#+BEGIN_SRC python
   import rest2vec as r2v
 
   embedding = r2v.PhaseEmbedding(W, roi_xyz, roi_names)
