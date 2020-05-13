@@ -18,7 +18,7 @@ The library versions used are listed below and in =requirements.txt=.
 - =nilearn= v0.6.2
 - =nipype= v1.3.0rc1
 - =numpy= v1.17.3
-- =scikit-learn= v0-.21.3
+- =scikit-learn= v0.21.3
 - =scipy= v1.3.1
 - =seaborn= v0.9.0
 - =statsmodels= v0.10.1
