@@ -259,7 +259,7 @@ class PhaseEmbedding:
 
 
 def _npm(group_matrix):
-    """Compute probability of negative correlaiton matrix.
+    """Compute probability of negative correlation matrix.
 
     Parameters
     ----------
