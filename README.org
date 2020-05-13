@@ -34,7 +34,7 @@ The general usage is
   embedding = r2v.PhaseEmbedding(W, roi_xyz, roi_names)
 #+END_SRC
 
-where =W= is an $N \times{} N \times{} S$ array of resting-state functional connectomes for $N$ brain regions and $S$ subjects, =roi_xyz= is the $N \times{} 3$ MNI coordinates for the brain regions, and =roi_names= contains the names of each region.
+where =W= is an /N/\times{} /N/ \times{} /S/ array of resting-state functional connectomes for /N/ brain regions and /S/ subjects, =roi_xyz= is the /N/ \times{} 3$ MNI coordinates for the brain regions, and =roi_names= contains the names of each region.
 (For larger datasets, e.g., the dataset from [[https://www.nitrc.org/projects/biocr_hcatlas/][Diez et al. 2015]] with 2514 regions, this process may take a few minutes to run.)
 
 The =PhaseEmbedding= object contains relevant attributes for convenient access, including
@@ -42,13 +42,13 @@ The =PhaseEmbedding= object contains relevant attributes for convenient access, 
 - =embedding.avg_nw=
   - Average Pearson correlation connectome across subjects
 - =embedding.P=
-  - Probability of negative correlation matrix $\mathbf{P}^{-}$
+  - Probability of negative correlation matrix
 - =embedding.theta=
-  - Phase angle spatial embedding (PhASE) matrix $\mathbf{\Theta}$
+  - Phase angle spatial embedding (PhASE) matrix
 - =embeddking.K=, =embedding.Kcen=
-  - Kernel similarity matrix $\mathbf{K}$ and centered version $\tilde{\mathbf{K}}$
+  - Kernel similarity matrix and centered kernel similarity matrix
 - =embedding.qmax=
-  - Eigenvector \mathbf{q} corresponding to the maximum eigenvalue of the centered kernel similarity matrix $\tilde{\mathbf{K}}$.
+  - Eigenvector corresponding to the maximum eigenvalue of the centered kernel similarity matrix.
 - =embedding.mod=
   - Maximum mean discrepancy (MMD) module assignment vector
 
