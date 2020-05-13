@@ -7,3 +7,51 @@ This repository contains the scripts used in [[https://www.biorxiv.org/content/e
 The python module =rest2vec.py= contains the =PhaseEmbedding= class used to create the graph embedding from functional connectome and brain region information data.
 The associated Jupyter Notebook contains the results and graphics used in the paper (will be uploaded shortly).
 For issues or questions, please open an issue on the github repo or contact me via email at zmorri4@uic.edu.
+
+* Dependencies
+rest2vec was tested using an Ubuntu 16.06 machine using Python version 3.7.3 from the Anaconda distribution.
+The library versions used are listed below and in =requirements.txt=.
+
+- =bctpy= v0.5.0
+- =matplotlib= v3.1.1
+- =nibabel= v2.5.1
+- =nilearn= v0.6.2
+- =nipype= v1.3.0rc1
+- =numpy= v1.17.3
+- =scikit-learn= v0-.21.3
+- =scipy= v1.3.1
+- =seaborn= v0.9.0
+- =statsmodels= v0.10.1
+
+
+* Usage
+The =rest2vec= module can be used to create an instance of the =PhaseEmbedding= class.
+The general usage is
+
+#+BEGIN_SRC python
+  import rest2vec as r2v
+
+  embedding = r2v.PhaseEmbedding(W, roi_xyz, roi_names)
+#+END_SRC
+
+where =W= is an $N \times{} N \times{} S$ array of resting-state functional connectomes for $N$ brain regions and $S$ subjects, =roi_xyz= is the $N \times{} 3$ MNI coordinates for the brain regions, and =roi_names= contains the names of each region.
+(For larger datasets, e.g., the dataset from [[https://www.nitrc.org/projects/biocr_hcatlas/][Diez et al. 2015]] with 2514 regions, this process may take a few minutes to run.)
+
+The =PhaseEmbedding= object contains relevant attributes for convenient access, including
+
+- =embedding.avg_nw=
+  - Average Pearson correlation connectome across subjects
+- =embedding.P=
+  - Probability of negative correlation matrix $\mathbf{P}^{-}$
+- =embedding.theta=
+  - Phase angle spatial embedding (PhASE) matrix $\mathbf{\Theta}$
+- =embeddking.K=, =embedding.Kcen=
+  - Kernel similarity matrix $\mathbf{K}$ and centered version $\tilde{\mathbf{K}}$
+- =embedding.qmax=
+  - Eigenvector \mathbf{q} corresponding to the maximum eigenvalue of the centered kernel similarity matrix $\tilde{\mathbf{K}}$.
+- =embedding.mod=
+  - Maximum mean discrepancy (MMD) module assignment vector
+
+While there are many brain plotting functions in Python from the [[https://nilearn.github.io/][Nilearn]] library, for users more comfortable with [[https://www.nitrc.org/projects/bnv/][BrainNet]], there is an =embedding.to_brainnet= method that exports the =PhaseEmbedding= object to =.node= and =.edge= files compatible with BrainNet.
+
+If users do not wish to use the =PhaseEmbedding= class, standalone functions for each of the preprocessing steps used in the class are also available (preceded by =_=).
