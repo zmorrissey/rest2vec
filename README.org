@@ -9,7 +9,7 @@ The associated Jupyter Notebook contains the results and graphics used in the pa
 For issues or questions, please open an issue on the github repo or contact me via email at zmorri4@uic.edu.
 
 * Dependencies
-rest2vec was tested using an Ubuntu 16.06 machine using Python version 3.7.3 from the Anaconda distribution.
+rest2vec was tested using an Ubuntu 16.04 machine using Python version 3.7.3 from the Anaconda distribution.
 The library versions used are listed below and in =requirements.txt=.
 
 - =bctpy= v0.5.0
