@@ -51,6 +51,10 @@ The =PhaseEmbedding= object contains relevant attributes for convenient access, 
   - Eigenvector corresponding to the maximum eigenvalue of the centered kernel similarity matrix.
 - =embedding.mod=
   - Maximum mean discrepancy (MMD) module assignment vector
+- =embedding.roi_xyz=
+  - MNI coordinates for brain regions
+- =embedding.roi_names=
+  - Names for brain regions
 
 While there are many brain plotting functions in Python from the [[https://nilearn.github.io/][Nilearn]] library, for users more comfortable with [[https://www.nitrc.org/projects/bnv/][BrainNet]], there is an =embedding.to_brainnet= method that exports the =PhaseEmbedding= object to =.node= and =.edge= files compatible with BrainNet.
 
