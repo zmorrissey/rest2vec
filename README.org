@@ -3,11 +3,7 @@
 
 
 * Description
-This repository contains the scripts used in /rest2vec: Vectorizing the resting-state functional connectome using graph embedding/ [fn:1], by Zachery Morrissey, Liang Zhan, Olusola Ajilore, and Alex Leow (2020).
+This repository contains the scripts used in [[https://www.biorxiv.org/content/early/2020/05/12/2020.05.10.085332][rest2vec: Vectorizing the resting-state functional connectome using graph embedding]], by Zachery Morrissey, Liang Zhan, Olusola Ajilore, and Alex Leow (2020).
 The python module =rest2vec.py= contains the =PhaseEmbedding= class used to create the graph embedding from functional connectome and brain region information data.
 The associated Jupyter Notebook contains the results and graphics used in the paper (will be uploaded shortly).
 For issues or questions, please open an issue on the github repo or contact me via email at zmorri4@uic.edu.
-
-* Footnotes
-
-[fn:1] https://www.biorxiv.org/content/early/2020/05/12/2020.05.10.085332
