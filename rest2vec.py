@@ -376,7 +376,7 @@ def _find_modularity(K, threshold=0):
 
     # Create community assignments
     mod = qmax.copy()
-    mod[mod >= threshold] = 1
-    mod[mod < threshold] = 2
+    mod[mod >= threshold] = 0
+    mod[mod < threshold] = 1
 
     return mod
