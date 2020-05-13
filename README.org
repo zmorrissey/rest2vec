@@ -34,7 +34,7 @@ The general usage is
   embedding = r2v.PhaseEmbedding(W, roi_xyz, roi_names)
 #+END_SRC
 
-where =W= is an /N/\times{} /N/ \times{} /S/ array of resting-state functional connectomes for /N/ brain regions and /S/ subjects, =roi_xyz= is the /N/ \times{} 3$ MNI coordinates for the brain regions, and =roi_names= contains the names of each region.
+where =W= is an /N/ \times{} /N/ \times{} /S/ array of resting-state functional connectomes for /N/ brain regions and /S/ subjects, =roi_xyz= is the /N/ \times{} 3 MNI coordinates for the brain regions, and =roi_names= contains the names of each region.
 (For larger datasets, e.g., the dataset from [[https://www.nitrc.org/projects/biocr_hcatlas/][Diez et al. 2015]] with 2514 regions, this process may take a few minutes to run.)
 
 The =PhaseEmbedding= object contains relevant attributes for convenient access, including
