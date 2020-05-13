@@ -1,6 +1,7 @@
 #+TITLE: rest2vec
 #+OPTIONS: toc:nil num:nil
 
+[[./figures/inkscape/rest2vec_workflow_v3_1in-textwidth.png]]
 
 * Description
 This repository contains the scripts used in [[https://www.biorxiv.org/content/early/2020/05/12/2020.05.10.085332][rest2vec: Vectorizing the resting-state functional connectome using graph embedding]], by Zachery Morrissey, Liang Zhan, Olusola Ajilore, and Alex Leow (2020).
@@ -22,7 +23,6 @@ The library versions used are listed below and in =requirements.txt=.
 - =scipy= v1.3.1
 - =seaborn= v0.9.0
 - =statsmodels= v0.10.1
-
 
 * Usage
 The =rest2vec= module can be used to create an instance of the =PhaseEmbedding= class.
