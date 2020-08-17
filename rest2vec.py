@@ -34,6 +34,10 @@ Contact:
 """
 
 import numpy as np
+import nibabel as nib
+from nibabel.affines import apply_affine
+from nilearn import datasets
+from nilearn.plotting import plot_connectome
 
 
 class PhaseEmbedding:
@@ -380,3 +384,118 @@ def _find_modularity(K, threshold=0):
     mod[mod < threshold] = 1
 
     return mod
+
+
+class Neurosynth:
+    """Class to store and plot data from Neurosynth."""
+    def __init__(self, nsynth_path, embedding):
+        self.embedding = embedding
+        self.mni_xyz = embedding.roi_xyz.to_numpy()
+        self.nsynth_nii = nib.load(nsynth_path)
+        self.nsynth_mat = self.nsynth_nii.get_data()
+
+        def nsynth_vals_from_mni(self):
+            """Get the data values at MNI_XYZ from a neurosynth map
+            registered to the MNI template.
+
+            Parameters
+            ----------
+            self.mni_xyz : numpy array
+                MNI (x,y,z)-coordinates to look up in neurosynth map.
+
+            self.nsynth_map : nibabel nifti object
+                Neurosynth nifti file (loaded using nibabel.load)
+
+            Returns
+            -------
+            nsynth_vals : numpy array
+                Nx1 array of values at each MNI coordinate from
+                neurosynth data map
+            """
+            nsynth_vals = np.zeros(self.mni_xyz.shape[0], dtype=int)
+            mni152 = datasets.load_mni152_template()
+
+            for i in range(self.mni_xyz.shape[0]):
+                x, y, z = [int(np.round(i))
+                           for i in
+                           apply_affine(np.linalg.inv(mni152.affine),
+                                        [self.mni_xyz[i, 0],
+                                         self.mni_xyz[i, 1],
+                                         self.mni_xyz[i, 2]])]
+                nsynth_vals[i] = self.nsynth_mat[x, y, z]
+
+            return nsynth_vals
+
+        self.nsynth_vals = nsynth_vals_from_mni(self)
+
+    def plot_nsynth_vals(self, df, ax, **kwargs):
+        """Plot polar embedding plot where Neurosynth data
+        values are mapped to a color gradient.
+
+        Parameters
+        ----------
+        df : pandas dataframe
+            Dataframe containing the 'r' and 'theta' coordinates
+            to plot each ROI.
+
+        ax : matplotlib axes
+            Axes to plot to.
+
+        kwargs : dict
+            Optional keyword arguments to pass to plt.scatter().
+        """
+        val_idx = np.where(self.nsynth_vals > 0)
+
+        # Background regions
+        ax.scatter(df['theta'].loc[~df.index.isin(val_idx)],
+                   df['r'].loc[~df.index.isin(val_idx)],
+                   color=[0.7, 0.7, 0.7],
+                   alpha=0.25,
+                   **kwargs)
+
+        # Foreground -- regions with FDR z-score > 0
+        ax.scatter(df['theta'].iloc[val_idx],
+                   df['r'].iloc[val_idx],
+                   vmin=0,
+                   c=self.nsynth_vals[val_idx],
+                   **kwargs)
+
+        return ax
+
+    def plot_nsynth_brain(self, ax, **kwargs):
+        """Plot glass brain where Neurosynth data
+        values are mapped to a color gradient.
+
+        Parameters
+        ----------
+        nw : numpy array
+            N x N Pearson correlation connectome.
+
+        xyz : numpy array
+            N x 3 MNI (x, y, z)-coordinates.
+
+        vals : numpy array
+            Data values from Neurosynth to map to color.
+
+        ax : matplotlib axes
+            Axes to plot to.
+
+        kwargs : dict
+            Optional keyword arguments to pass to
+            nilearn.plot_connectome().
+        """
+
+        val_idx = np.where(self.nsynth_vals > 0)
+
+        plot_connectome(self.embedding.avg_nw[np.ix_(val_idx[0],
+                                                    val_idx[0])],
+                        node_coords=self.mni_xyz[val_idx],
+                        node_color=self.nsynth_vals[val_idx],
+                        colorbar=False,
+                        edge_threshold=1,
+                        annotate=False,
+                        node_kwargs={'cmap': 'magma', 'vmin': 0},
+                        axes=ax,
+                        **kwargs)
+
+        return ax
