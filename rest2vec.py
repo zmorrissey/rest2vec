@@ -240,6 +240,7 @@ class PhaseEmbedding:
             'theta': self.isomap_theta,
             'r': self.isomap_r,
             'D': self.D,
+            'mod': self.mod.astype(int),
             'mni_x': self.roi_xyz['x'],
             'mni_y': self.roi_xyz['y'],
             'mni_z': self.roi_xyz['z'],
