@@ -34,151 +34,218 @@ Contact:
 """
 
 import numpy as np
+import pandas as pd
 import nibabel as nib
+from sklearn.metrics.pairwise import euclidean_distances as edist
 from nibabel.affines import apply_affine
 from nilearn import datasets
 from nilearn.plotting import plot_connectome
+from sklearn.manifold import Isomap
+
+
+def coord_polar(mat):
+    """Convert 2D array from Cartesian (x, y) coordinates to
+    polar (r, theta) coordinates.
+
+    Parameters
+    ----------
+    mat : numpy array
+        N x 2 array of Cartesian coordinates.
+
+    Returns
+    -------
+    r : numpy vector
+        Polar radius vector of size N.
+
+    theta : numpy vector
+        Polar angle vector of size N.
+    """
+    x = mat[:, 0].copy()
+    y = mat[:, 1].copy()
+
+    r = np.sqrt(x**2 + y**2)
+    theta = np.arctan2(y, x)
+
+    return r, theta
 
 
 class PhaseEmbedding:
     """Class for creating phase angle spatial embedding (PhASE) objects."""
-    def __init__(self, nw, roi_xyz, roi_names):
+    def __init__(self, nw, roi_xyz, roi_names, n_neighbors):
         self.nw = nw
         self.roi_names = roi_names
         self.roi_xyz = roi_xyz
+        self.n_neighbors = n_neighbors  # for isomap
 
-        def npm(self):
-            """Compute probability of negative correlation matrix.
+    def npm(self):
+        """Compute probability of negative correlation matrix.
 
-            Parameters
-            ----------
-            nw : numpy array
-                3D array of size N x N x Z, where N is the number of ROIs,
-                and Z is the number of subjects. Each N x N slice is the
-                Pearson correlation connectome for the z-th subject.
+        Parameters
+        ----------
+        nw : numpy array
+            3D array of size N x N x Z, where N is the number of ROIs,
+            and Z is the number of subjects. Each N x N slice is the
+            Pearson correlation connectome for the z-th subject.
 
-            Returns
-            -------
-            P : numpy array
-                N x N array where the (i,j)-th elements are the probability
-                of there being a negative edge between nodes i and j.
-            """
+        Returns
+        -------
+        P : numpy array
+            N x N array where the (i,j)-th elements are the probability
+            of there being a negative edge between nodes i and j.
+        """
 
-            num_subjects = self.nw.shape[2]
+        num_subjects = self.nw.shape[2]
 
-            P = np.sum(self.nw < 0, axis=2) / num_subjects
-            return P
+        self.P = np.sum(self.nw < 0, axis=2) / num_subjects
+        return self
 
-        def phase(self):
-            """Compute phase angle spatial embedding (PhASE) matrix from
-            negative probability matrix.
+    def phase(self):
+        """Compute phase angle spatial embedding (PhASE) matrix from
+        negative probability matrix.
 
-            Parameters
-            ----------
-            npm : numpy array
-                N x N array where the (i,j)-th elements are the probability
-                of there being a negative edge between nodes i and j.
+        Parameters
+        ----------
+        npm : numpy array
+            N x N array where the (i,j)-th elements are the probability
+            of there being a negative edge between nodes i and j.
 
-            Returns
-            -------
-            theta : numpy array
-                N x N array where the (i,j)-th elements are the phase angle
-                between i and j.
-            """
+        Returns
+        -------
+        theta : numpy array
+            N x N array where the (i,j)-th elements are the phase angle
+            between i and j.
+        """
 
-            return np.arctan(np.sqrt(self.P / (1 - self.P)))
+        self.theta = np.arctan(np.sqrt(self.P / (1 - self.P)))
+        return self
 
-        def kernel_sim(self, method='cosine', sigma=1):
-            """Compute kernel similarity matrix.
+    def kernel_sim(self, method='cosine', sigma=1):
+        """Compute kernel similarity matrix.
 
-            Parameters
-            ----------
-            theta : numpy array
-                N x N phase angle spatial embedding matrix. See phase() for
-                details.
+        Parameters
+        ----------
+        theta : numpy array
+            N x N phase angle spatial embedding matrix. See phase() for
+            details.
 
-            method : string
-                Kernel method to use (cosine or RBF). Default is cosine.
+        method : string
+            Kernel method to use (cosine or RBF). Default is cosine.
 
-            sigma : float
-                If using RBF kernel, value of sigma to use.
+        sigma : float
+            If using RBF kernel, value of sigma to use.
 
-            Returns
-            -------
-            K : numpy array
-                N x N kernel similarity matrix.
-            """
+        Returns
+        -------
+        K : numpy array
+            N x N kernel similarity matrix.
+        """
 
-            N = self.theta.shape[0]  # number of ROIs
+        N = self.theta.shape[0]  # number of ROIs
 
-            if method == 'cosine':
-                K = np.zeros_like(self.theta)
+        if method == 'cosine':
+            self.K = np.zeros_like(self.theta)
 
-                for i in range(N):
-                    row_i = self.theta[i]
-                    K[i, :] = np.sum(np.cos(row_i - self.theta), axis=1) / N
+            for i in range(N):
+                row_i = self.theta[i]
+                self.K[i, :] = np.sum(np.cos(row_i - self.theta), axis=1) / N
 
-                return K
+            return self
 
-            elif method == 'rbf':
-                K = np.ones_like(self.theta)
+        elif method == 'rbf':
+            self.K = np.ones_like(self.theta)
 
-                rows, cols = np.triu_indices(N)
+            rows, cols = np.triu_indices(N)
 
-                for i in rows:
-                    row_i = self.theta[i]
-                    for j in cols:
-                        row_j = self.theta[j, :]
-                        K[i, j] = np.exp(-sigma *
-                                         np.sum((row_i - row_j)**2) / N)
+            for i in rows:
+                row_i = self.theta[i]
+                for j in cols:
+                    row_j = self.theta[j, :]
+                    self.K[i, j] = np.exp(-sigma *
+                                          np.sum((row_i - row_j)**2) / N)
 
-                K = np.fill_diagonal(K + K.T, 1)
+            self.K = np.fill_diagonal(self.K + self.K.T, 1)
 
-                return K
+            return self
 
-        def modularity(self, threshold=0):
-            """Compute modularity of phase angle spatial embedding (PhASE)
-               matrix after computing kernel similarity matrix.
+    def modularity(self, threshold=0):
+        """Compute modularity of phase angle spatial embedding (PhASE)
+           matrix after computing kernel similarity matrix.
 
-            Parameters
-            ----------
-            K : numpy array
-                N x N kernel similarity matrix. See compute_k() for details.
+        Parameters
+        ----------
+        K : numpy array
+            N x N kernel similarity matrix. See compute_k() for details.
 
-            threshold : float
-                Value at which to threshold top eigenvector to determine cut.
-                Default is 0.
+        threshold : float
+            Value at which to threshold top eigenvector to determine cut.
+            Default is 0.
 
-            Returns
-            -------
-            mod : numpy array
-                N x 1 community assignment vector.
+        Returns
+        -------
+        mod : numpy array
+            N x 1 community assignment vector.
 
-            qmax : numpy array
-                Eigenvector corresponding to maximum eigenvalue
-            """
+        qmax : numpy array
+            Eigenvector corresponding to maximum eigenvalue
+        """
 
-            N = self.K.shape[0]  # number ROIs
-            C = np.eye(N) - (1 / N) * np.ones_like(N)  # centering matrix
-            Kcen = C @ self.K @ C  # center kernel matrix
+        N = self.K.shape[0]  # number ROIs
+        C = np.eye(N) - (1 / N) * np.ones_like(N)  # centering matrix
+        self.Kcen = C @ self.K @ C  # center kernel matrix
 
-            # Get eigenvector corresponding to maximum eigenvalue
-            evals, evecs = np.linalg.eig(Kcen)
-            qmax = evecs[:, np.argmax(np.diag(evals))]
+        # Get eigenvector corresponding to maximum eigenvalue
+        self.evals, self.evecs = np.linalg.eig(self.Kcen)
+        self.qmax = self.evecs[:, np.argmax(np.diag(self.evals))]
 
-            # Create community assignments
-            mod = qmax.copy()
-            mod[mod >= threshold] = 0
-            mod[mod < threshold] = 1
+        # Create community assignments
+        self.mod = self.qmax.copy()
+        self.mod[self.mod >= threshold] = 0
+        self.mod[self.mod < threshold] = 1
 
+        return self
 
-            return mod, qmax, Kcen
+    def polar_embedding(self):
+        """Compute polar coordinates for embedding."""
+        self.isomap_r, self.isomap_theta = coord_polar(self.isomap)
 
-        self.avg_nw = np.mean(nw, axis=2)
-        self.P = npm(self)
-        self.theta = phase(self)
-        self.K = kernel_sim(self)
-        self.mod, self.qmax, self.Kcen = modularity(self)
+        return self
+
+    def distance_to_origin(self):
+        """Compute distance to origin of embedding."""
+
+        self.D = edist(self.isomap,
+                       np.zeros([1, self.isomap.shape[1]])).flatten()
+
+    def fit(self):
+        """Main call to run rest2vec."""
+        self.avg_nw = np.mean(self.nw, axis=2)
+        self.npm()
+        self.phase()
+        self.kernel_sim()
+        self.modularity()
+
+        # Dimensionality reduction
+        self.isomap = Isomap(
+            n_neighbors=self.n_neighbors,
+            n_components=2,
+            path_method='D').fit_transform(self.theta)
+
+        self.polar_embedding()
+        self.distance_to_origin()
+
+        # Build embedding dataframe
+        self.df = pd.DataFrame({
+            'x': self.isomap[:, 0],
+            'y': self.isomap[:, 1],
+            'theta': self.isomap_theta,
+            'r': self.isomap_r,
+            'D': self.D,
+            'mni_x': self.roi_xyz['x'],
+            'mni_y': self.roi_xyz['y'],
+            'mni_z': self.roi_xyz['z'],
+            'roi': self.roi_names.replace('_', ' ', regex=True)})
+
+        return self
 
     def to_brainnet(self, edges=None, C=None, S=None,
                     path='.', prefix='r2v-brainnet'):
