@@ -4,10 +4,11 @@
 [[./rest2vec-pipeline.png]]
 
 * Description
-This repository contains the scripts used in [[https://www.biorxiv.org/content/early/2020/05/12/2020.05.10.085332][rest2vec: Vectorizing the resting-state functional connectome using graph embedding]], by Zachery Morrissey, Liang Zhan, Olusola Ajilore, and Alex Leow (2020).
+This repository contains the scripts used in [[https://doi.org/10.1016/j.neuroimage.2020.117538][rest2vec: Vectorizing the resting-state functional connectome using graph embedding]], by Zachery Morrissey, Liang Zhan, Olusola Ajilore, and Alex Leow (2020) in /NeuroImage/.
 The python module =rest2vec.py= contains the =PhaseEmbedding= class used to create the graph embedding from functional connectome and brain region information data.
+In addition, the =Neurosynth= class is used to provide convenience functions for plotting the Neurosynth meta-analysis data.
 The associated Jupyter Notebook =rest2vec.ipynb= contains the code used to produce the results and graphics used in the paper.
-For issues or questions, please open an issue on the github repo or contact me via email at zmorri4@uic.edu.
+For any questions or issues, please open an issue on the github repo or contact me via email at zmorri4@uic.edu.
 
 * Dependencies
 rest2vec was tested using an Ubuntu 16.04 machine using Python version 3.7.3 from the Anaconda distribution.
@@ -25,37 +26,64 @@ The library versions used are listed below and in =requirements.txt=.
 - =statsmodels= v0.10.1
 
 * Usage
-The =rest2vec= module can be used to create an instance of the =PhaseEmbedding= class.
-The general usage is
 
-#+BEGIN_SRC python
-  import rest2vec as r2v
+** =PhaseEmbedding= class
+ The =rest2vec= module can be used to create an instance of the =PhaseEmbedding= class.
+ The general usage is
 
-  embedding = r2v.PhaseEmbedding(W, roi_xyz, roi_names)
-#+END_SRC
+ #+BEGIN_SRC python
+   import rest2vec as r2v
 
-where =W= is an /N/ \times{} /N/ \times{} /S/ array of resting-state functional connectomes for /N/ brain regions and /S/ subjects, =roi_xyz= is the /N/ \times{} 3 MNI coordinates for the brain regions, and =roi_names= contains the names of each region.
-(For larger datasets, e.g., the dataset from [[https://www.nitrc.org/projects/biocr_hcatlas/][Diez et al. 2015]] with 2514 regions, this process may take a few minutes to run.)
+   embedding = r2v.PhaseEmbedding(W, roi_xyz, roi_names, n_neighbors).fit()
+ #+END_SRC
 
-The =PhaseEmbedding= object contains relevant attributes for convenient access, including
+ where =W= is an /N/ \times{} /N/ \times{} /S/ array of resting-state functional connectomes for /N/ brain regions and /S/ subjects, =roi_xyz= is the /N/ \times{} 3 MNI coordinates for the brain regions, =roi_names= contains the names of each region, and =n_neighbors= is the number of neighbors used when computing the isomap embedding.
+ (For larger datasets, e.g., the dataset from [[https://www.nitrc.org/projects/biocr_hcatlas/][Diez et al. 2015]] with 2514 regions, this process may take a few minutes to run.)
 
-- =embedding.avg_nw=
-  - Average Pearson correlation connectome across subjects
-- =embedding.P=
-  - Probability of negative correlation matrix
-- =embedding.theta=
-  - Phase angle spatial embedding (PhASE) matrix
-- =embeddking.K=, =embedding.Kcen=
-  - Kernel similarity matrix and centered kernel similarity matrix
-- =embedding.qmax=
-  - Eigenvector corresponding to the maximum eigenvalue of the centered kernel similarity matrix.
-- =embedding.mod=
-  - Maximum mean discrepancy (MMD) module assignment vector
-- =embedding.roi_xyz=
-  - MNI coordinates for brain regions
-- =embedding.roi_names=
-  - Names for brain regions
+ The =PhaseEmbedding= object contains relevant attributes for convenient access, including
 
-While there are many brain plotting functions in Python from the [[https://nilearn.github.io/][Nilearn]] library, for users more comfortable with [[https://www.nitrc.org/projects/bnv/][BrainNet]], there is an =embedding.to_brainnet= method that exports the =PhaseEmbedding= object to =.node= and =.edge= files compatible with BrainNet.
+ - =embedding.nw=
+   - $N \times N \times S$ connectomes
+ - =embedding.avg_nw=
+   - Average Pearson correlation connectome across subjects
+ - =embedding.P=
+   - Probability of negative correlation matrix
+ - =embedding.theta=
+   - Phase angle spatial embedding (PhASE) matrix
+ - =embedding.K=, =embedding.Kcen=
+   - Kernel similarity matrix and centered kernel similarity matrix
+ - =embedding.evals=, =embedding.evecs=
+   - Eigenvalues and eigenvectors of $\mathbf{\tilde{K}}$
+ - =embedding.polar_embedding=
+   - Polar coordinates of 2D isomap embedding
+ - =embedding.D=
+   - Distance to origin of 2D isomap embedding for each ROI
+ - =embedding.df=
+   - Pandas dataframe that contains the MNI (x, y, z)-coordinates, isomap embedding (x, y)- and ($\theta$, r)-coordinates, distance to origin, MMD community, and label name for each ROI
+ - =embedding.qmax=
+   - Eigenvector corresponding to the maximum eigenvalue of the centered kernel similarity matrix.
+ - =embedding.mod=
+   - Maximum mean discrepancy (MMD) module assignment vector
+ - =embedding.roi_xyz=
+   - MNI coordinates for brain regions
+ - =embedding.roi_names=
+   - Names for brain regions
 
-If users do not wish to use the =PhaseEmbedding= class, standalone functions for each of the preprocessing steps used in the class are also available (preceded by =_=).
+ While there are many brain plotting functions in Python from the [[https://nilearn.github.io/][Nilearn]] library, for users more comfortable with [[https://www.nitrc.org/projects/bnv/][BrainNet]], there is an =embedding.to_brainnet= method that exports the =PhaseEmbedding= object to =.node= and =.edge= files compatible with BrainNet.
+
+ If users do not wish to use the =PhaseEmbedding= class, standalone functions for each of the preprocessing steps used in the class are also available (preceded by =_=).
+
+** COMMENT =Neurosynth= class
+
+   The =Neurosynth= class offers some convenience functions for using [[https://www.neurosynth.org/][Neurosynth]] meta-analysis data with rest2vec. The general usage is
+
+   #+begin_src python
+     nsynth = r2v.Neurosynth(path, embedding)
+
+     nsynth.plot_nsynth_vals()
+     nsynth.plot_nsynth_brain()
+   #+end_src
+
+   where =path= is a string indicating the path to a Neurosynth =.nii.gz= file, and =embedding= is an instance of the =PhaseEmbedding= class.
+
+   The two main plotting functions for the =Neurosynth= class are =plot_nsynth_vals= and =plot_nsynth_brain=. =plot_nsynth_vals= will plot the values from the Neurosynth =.nii.gz= file onto the isomap embedding provided by =embedding=, and =plot_nsynth_brain= will plot the values in the MNI template space at the ROI coordinates provided by =embedding=. The user can also pass a specific figure axes using the =ax= parameter for more control or for creating plot wrapper functions (see example in =rest2vec.ipynb=).

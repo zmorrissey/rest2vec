@@ -4,15 +4,14 @@
 """Module containing classes and functions for performing rest2vec.
 
 Description:
-    This module contains the PhaseEmbedding object for the equations
-    described in [1]. In addition to the classes, the individual methods
-    have been included as internal functions (preceded by '_').
+    This module contains the PhaseEmbedding and NeuroSynth classes as
+    described in Morrissey et al., 2020 [1].
 
 Reference:
     [1] Morrissey et al. (2020). rest2vec: Vectorizing the resting-state
-        functional connectome using graph embedding.
-        DOI: https://doi.org/10.1101/2020.05.10.085332
-        URL: https://www.biorxiv.org/content/early/2020/05/12/2020.05.10.085332
+        functional connectome using graph embedding. NeuroImage.
+        DOI: https://doi.org/10.1101/2020.05.10.085332https://doi.org/10.1016/j.neuroimage.2020.117538
+        URL: https://www.sciencedirect.com/science/article/pii/S1053811920310235
 
 Contact:
     First author
