@@ -43,7 +43,7 @@ The library versions used are listed below and in =requirements.txt=.
  The =PhaseEmbedding= object contains relevant attributes for convenient access, including
 
  - =embedding.nw=
-   - $N \times N \times S$ connectomes
+   - /N/ \times{} /N/ \times{} /S/ connectomes
  - =embedding.avg_nw=
    - Average Pearson correlation connectome across subjects
  - =embedding.P=
@@ -53,13 +53,13 @@ The library versions used are listed below and in =requirements.txt=.
  - =embedding.K=, =embedding.Kcen=
    - Kernel similarity matrix and centered kernel similarity matrix
  - =embedding.evals=, =embedding.evecs=
-   - Eigenvalues and eigenvectors of $\mathbf{\tilde{K}}$
+   - Eigenvalues and eigenvectors of centered kernel matrix
  - =embedding.polar_embedding=
    - Polar coordinates of 2D isomap embedding
  - =embedding.D=
    - Distance to origin of 2D isomap embedding for each ROI
  - =embedding.df=
-   - Pandas dataframe that contains the MNI (x, y, z)-coordinates, isomap embedding (x, y)- and ($\theta$, r)-coordinates, distance to origin, MMD community, and label name for each ROI
+   - Pandas dataframe that contains the MNI (x,y,z)-coordinates, isomap embedding (x,y)- and (\theta, r)-coordinates, distance to origin, MMD community, and label name for each ROI
  - =embedding.qmax=
    - Eigenvector corresponding to the maximum eigenvalue of the centered kernel similarity matrix.
  - =embedding.mod=
@@ -71,9 +71,7 @@ The library versions used are listed below and in =requirements.txt=.
 
  While there are many brain plotting functions in Python from the [[https://nilearn.github.io/][Nilearn]] library, for users more comfortable with [[https://www.nitrc.org/projects/bnv/][BrainNet]], there is an =embedding.to_brainnet= method that exports the =PhaseEmbedding= object to =.node= and =.edge= files compatible with BrainNet.
 
- If users do not wish to use the =PhaseEmbedding= class, standalone functions for each of the preprocessing steps used in the class are also available (preceded by =_=).
-
-** COMMENT =Neurosynth= class
+** =Neurosynth= class
 
    The =Neurosynth= class offers some convenience functions for using [[https://www.neurosynth.org/][Neurosynth]] meta-analysis data with rest2vec. The general usage is
 
